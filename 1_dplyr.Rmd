@@ -63,7 +63,7 @@ my_data = as.data.frame(my_data)
 
 The `dplyr` package is designed to make it easier to manipulate flat (2-D) data. `dplyr` provides simple "verbs", functions that correspond to the most common data manipulation tasks, to help you translate your thoughts into code. This package also uses efficient backends, so you spend less time waiting for the computer. Here are the most common functions that we will be using in `dplyr`:
 
-dplyr aims to provide a function for each basic verb of data manipulation. These verbs can be organised into three categories based on the component of the dataset that they work with:
+dplyr aims to provide a function for each basic verb of data manipulation:
 
   * `filter()` chooses rows based on column values.
   * `arrange()` changes the order of the rows.
@@ -131,7 +131,7 @@ Note again that one of the really nice things about `dplyr` is that the code is 
 
 All of the dplyr functions take a data frame (or tibble) as the first argument. Rather than forcing the user to either save intermediate objects or nest functions, dplyr provides the pipe operator `%>%` from the package `magrittr`. The pipe operator allows us to combine multiple operations in R into a single sequential chain of actions.
 
-Let’s start with a hypothetical example. Say you would like to perform a hypothetical sequence of operations on a hypothetical data frame x using hypothetical functions f(), g(), and h():
+Let’s start with a hypothetical example. Say you would like to perform a sequence of operations on data frame `x` using hypothetical functions f(), g(), and h():
 
 1.  Take x *then*
 2.  Use x as an input to a function f() *then*
@@ -162,7 +162,7 @@ You would read this sequence as:
 
 So while both approaches achieve the same goal, the latter is much more human-readable because you can clearly read the sequence of operations line-by-line. 
 
-This is how a single transfomration with `filter()` looks with and without a pipe: 
+This is how a single transformation with `filter()` looks with and without a pipe: 
 
 ```{r}
 # These two lines of code are equivalent:
@@ -204,7 +204,7 @@ The `dplyr` syntax is simpler, and the name of the original dataset (`penguins`)
 
 ### Exercise 1.1
 
-Build a data set that contains only Chinstrap penguins with a flipper length > 200 mm. What is the percentage of females in that subset of data? How does that compare to the percentage of all female Chinstrap penguins included in the original data set? Use the `summary()` function to compare the sex ratio of the full Chinstrap dataset vs. the subset of Chinstrap penguins with a flipper length > 200 mm. Or you can use again subset the data by sex and use the `dim()` function to count the number of rows in the subsetted data. Given this analysis, what do you think the relationship is between sex and flipper length?
+Build a data set that contains only Chinstrap penguins. Then build another data set that contains only Chinstrap penguins with a flipper length > 200 mm. What is the sex ratio of Chinstrap penguins? How does that compare to the sex ratio of Chinstrap penguins with a flipper length > 200 mm? Use the `summary()` function to examine sex ratios. Given this analysis, what do you think the relationship is between sex and flipper length?
 
 ***
 
@@ -213,12 +213,20 @@ Build a data set that contains only Chinstrap penguins with a flipper length > 2
 Now let's ratchet up our analysis a few notches and say that you need to know the mean body mass for each sex of each penguin species. Perhaps you want to throw out unknown sex birds so that they don't bias your data. You can use `group_by()` to indicate that you want to consider each sex and each species as a distinct dataset when you use the `summarize()` function. Let's finish it off by printing it out to the console with `print()`. These may be valuable summary statistics that we want to refer back to when we are writing up our analysis, or perhaps we'll want to include the results in a table in a presentation at a conference. Either way, let's save our new summary table of mean body mass to a `.csv` in our project folder:
 
 ```{r}
-penguin_mean_mass = penguins %>% 
+# Calculate mass of each species
+species_mean_mass = penguins %>% 
+  group_by(species) %>%
+  summarize(mean_mass_g = mean(body_mass_g, na.rm=TRUE)) 
+
+# Calculate mass of each species by sex
+species_sex_mean_mass = penguins %>% 
   filter(!is.na(sex)) %>%   # Removes rows where sex is NA. Read the ! as the word "not" here - i.e. it flips the logical value
   group_by(species, sex) %>%
   summarize(mean_mass_g = mean(body_mass_g)) %>%
   print()
-write_csv(penguin_mean_mass, path="data/processed/peguin_mean_body_mass_g.csv")
+
+# Save the table
+write_csv(species_sex_mean_mass, path="data/processed/peguin_mean_body_mass_g.csv")
 ```
 
 Note, I used `write_csv()` in the `dplyr` package, but this is almost equivalent to `write.csv()` in base R. It doesn't really matter which write function you use here.
@@ -250,8 +258,7 @@ Here are a few more examples of simple things you can do with `dplyr`:
 # Which species has the most observations?
 n_by_species = penguins %>%
   group_by(species) %>%
-  summarize(n = n()) %>%
-  print()
+  summarize(n = n()) 
 
 # Use mutate() to convert body mass units:
 penguins_for_america = penguins %>%
@@ -261,13 +268,21 @@ penguins_for_america = penguins %>%
 penguins %>%
   distinct(island)
 
+# Grab just the species and sex columns:
+penguins_brief = penguins %>% 
+  select(species, sex)
+
 # Remove bill data:
 penguins_no_bill = penguins %>%
-  select(-bill_length_mm, bill_depth_mm)
+  select(-bill_length_mm, -bill_depth_mm)
 
-# Sort data by island, then species, then sex:
+# Sort data by body mass, then species:
 penguins_sorted = penguins %>%
-  arrange(island, species, sex)
+  arrange(body_mass_g, species)
+
+# Sort data by body mass (highest to lowest), then species:
+penguins_sorted = penguins %>%
+  arrange(rev(body_mass_g), species)
 ```
 
 ***

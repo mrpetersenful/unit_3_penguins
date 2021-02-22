@@ -18,21 +18,20 @@ library(palmerpenguins)
 
 ### Exercise 1.1
 
-Build a data set that contains only Chinstrap penguins with a flipper length > 200 mm. What is the percentage of females in that subset of data? How does that compare to the percentage of all female Chinstrap penguins included in the original data set? Use the `summary()` function to compare the sex ratio of the full Chinstrap dataset vs. the subset of Chinstrap penguins with a flipper length > 200 mm. Or you can use again subset the data by sex and use the `dim()` function to count the number of rows in the subsetted data. Given this analysis, what do you think the relationship is between sex and flipper length?
+Build a data set that contains only Chinstrap penguins. Then build another data set that contains only Chinstrap penguins with a flipper length > 200 mm. What is the sex ratio of Chinstrap penguins? How does that compare to the sex ratio of Chinstrap penguins with a flipper length > 200 mm? Use the `summary()` function to examine sex ratios. Given this analysis, what do you think the relationship is between sex and flipper length?
 
 ```{r}
 # Sex ratio of all Chinstrap observations
-summary(penguins %>% filter(species=="Chinstrap"))
+chin = penguins %>% filter(species=="Chinstrap")
+summary(chin)
 sex_ratio_all = 34/68
-dim(penguins %>% filter(species=="Chinstrap") %>% filter(sex=="female"))[1]/dim(penguins %>% filter(species=="Chinstrap"))[1]
 
 # Sex ratio of Chinstrap penguins with flipper length > 200 mm
-dat_exer_1 = penguins %>%
+chin_long_wing_ladies = penguins %>%
   filter(species == "Chinstrap",
          flipper_length_mm > 200)
-summary(dat_exer_1)
+summary(chin_long_wing_ladies)
 sex_ratio_subset = 1/18
-dim(dat_exer_1 %>% filter(sex=="female"))[1]/dim(dat_exer_1)[1]
 ```
 
 ***
@@ -66,14 +65,16 @@ penguins %>%
   filter(species=="Adelie",
          island %in% c("Biscoe","Dream")) %>%
   mutate(bill_length_in = bill_length_mm * 0.039) %>% # Conversion: 0.0393701 inches / mm
-  summarize(mean_bill_length_in = mean(bill_length_in), sd_bill_length_in = sd(bill_length_in))
+  summarize(mean_bill_length_in = mean(bill_length_in), 
+            sd_bill_length_in = sd(bill_length_in))
 
 penguins %>% 
   filter(species=="Adelie",
          island =="Torgersen",
          !is.na(bill_length_mm)) %>%
   mutate(bill_length_in = bill_length_mm * 0.039) %>% # Conversion: 0.0393701 inches / mm
-  summarize(mean_bill_length_in = mean(bill_length_in), sd_bill_length_in = sd(bill_length_in))
+  summarize(mean_bill_length_in = mean(bill_length_in), 
+            sd_bill_length_in = sd(bill_length_in))
 ```
 
 ***
