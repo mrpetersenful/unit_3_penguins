@@ -2,17 +2,75 @@
 ## 3.1 Intro to penguins
 
 
-install.packages("tidyverse")
+## The Tidyverse package makes coding much more efficient, easier to write and read, 
+## and creates great visualizations. Developed by RStudio's chief scientist Hadley
+## Wickham, the Tidyverse provides a well-documented workflow for general data modeling, 
+## wrangling, and visualization tasks. The Tidyverse is a collection of R packages built
+## around the basic concept that data in a table should have one observation per row, 
+## one variable per column, and only one value per cell. 
 
+## First, we have to install the Tidyverse package. We can do this in RStudio by going
+## into the Tools tab and going to Install Packages. I can also do this from the 
+## command line. 
+install.packages("tidyverse")
+## You only have to install packages on your computer once. However, to use Tidyverse
+## in your R script, you need to load the package library at least every R session 
+## where you intend to use that package. 
 
 library("tidyverse")
 
 
 tidyverse_packages()
+## These are the packages that are loaded when you load the Tidyverse library.
+
+## The packages we will be using consistently throughout the rest of the course are 
+## dplyr (for data wrangling) and ggplot2 (for visualization). Note that the lubridate
+## package that we've already used is part of the Tidyverse as well. 
+
+## The Tidyverse is built around the basic concept that data in a table should have
+## one observation per row, one variable per column, and only one value per cell. 
+## Once data is in this 'tidy' format, it can be transformed, visualized, and modelled
+## for analysis. 
+
+## When using functions in the Tidyverse ecosystem, most data is returned as a tibble
+## object. Tibbles are very similar to the data.frames we have been working with, and 
+## it is perfectly fine to use Tidyverse functions on a data.frame object. Just be 
+## aware that in most cases, the Tidyverse function will transform your data into a 
+## tibble. If you're unobservant, you won't even notice a difference. However, there 
+## are a few differences between the two flat data types, most of which are just designed
+## to make your life easier. The most obvious differences when you're working with
+## tibbles is: 
+
+## 1) printing in the console looks different
+## 2) never changes the type of the inputs (e.g., it never converts strings to factors)
+## 3) never creates row names
+## 4) never changes the names of variables
+## 5) tibbles generate a warning if the column you're trying to access doesn't exist.
+
+## Some older functions don't work with tibbles. If you find one of these functions, use
+## as.data.frame() to turn a tibble back to a data.frame. 
+
+## Example:   my_data = as.data.frame(my_data)
+
+
+## The dplyr package is designed to make it easier to manipulate flat (2-D) data. dplyr
+## provides simple "verbs", functions that correspond to the most common data 
+## manipulation tasks, to help you translate your thoughts into code. This package
+## also uses efficient backends, so you spend less time waiting for the computer. 
+## Here are the most common functions that we will be using in dplyr:
+
+####    filter() chooses rows based on column values.
+####    arrange() changes the order of the rows. 
+####    select() changes whether or not a column is included. 
+####    rename() changes the name of columns. 
+####    mutate() changes the values of columns and creates new columns. 
+####    summarize() collapses a group into a single row. 
+####    group_by() group data into rows with the same values
+####    ungroup() remove grouping information from data frame.
+####    distinct() remove duplicate rows. 
 
 
 
-## my_data = as.data.frame(my_data)
 
 ## I'm also going to install the palmer pengins package.
 install.packages("palmerpenguins")
