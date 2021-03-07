@@ -1,67 +1,153 @@
-## ----setup, include=FALSE-------------------------------------------------------------------
-knitr::opts_chunk$set(fig.width=6, fig.asp = 0.618, collapse=TRUE) 
+## 1 March 2021
+## 3.3 t-tests
+
+## t-tests are used to assess the difference between two means. When conducting a t-test,
+## you're testing the null hypothesis (H0) that the means are the same. As a standard
+## practice in classical (frequentist) statistics, if the p-value resulting from your
+## t-test is < 0.05, you reject the null hypothesis in favor of the alternative 
+## hypothesis, which states that the means are significantly different. 
+
+## There are 3 types of t-test:
+#### -- a one-sample t-test
+#### -- independent sample t-test
+#### -- paired t-test
+
+## We'll use the tidyverse and our penguins data to run through examples of each type
+## of t-test. We'll also load in the package rstatix because it contains pipe-friendly
+## statistics functions that play nicely with the tidyverse. Don't forget to install
+## the rstatix package if it is your first time using it! I'm also going to use the 
+## kable() function in the knitr package to print out some of the results tables
+## neatly for this tutorial. This is just for aesthetics, and is not necessary for any
+## of the plotting or statistical tests in this lesson.
 
 
-## ---- message=FALSE-------------------------------------------------------------------------
 library(tidyverse)
 library(palmerpenguins)
 library(rstatix)
-library(knitr)  # prints pretty tables
+library(knitr)  ## prints pretty tables.
 
+## The one-sample t-test, also known as the single-parameter t-test or single-sample 
+## t-test, is used to compare the mean of one sample to a known standard (or 
+## theoretical/hypothetical) mean. Generally, the theoretical mean comes from somewhere 
+## in the literature or from a previous experiment in your own lab. 
 
-## -------------------------------------------------------------------------------------------
-# Two great functions for looking at the first few rows of your variables:
+## The one-sample t-test assumes the following characteristics about the data: 
+#### -- no significant outliers in the data
+#### -- data should be approximately normally distributed
+
+## Before conducting any statistical analyses on your data, it's important to understand
+## the data. People often skip this step, but it's important. Here are some good goals 
+## for exploratory data analysis:
+#### 1) Looking at the raw data values. 
+#### 2) Computing summary statistics.
+#### 3) Creating data visualizations.
+
+## These are things we've already been doing in the course, but now that we're trying 
+## to run a statistical test with the penguins data, we should use the functions in 
+## base R and the tidyverse to formally run through these steps. We're going to look
+## at the difference in body mass between the three penguin species in our observations:
+## Gentoo, Chinstrap, and Adelie. 
+
+## Two great functions for looking at the first few rows of your variables:
 head(penguins)
 glimpse(penguins)
 
-# Summary statistics. Note # of observations and NAs
+## Summary statistics. Note # of observations and NAs.
 summary(penguins)
 
 ggplot(data=penguins) +
   geom_histogram(aes(x=body_mass_g, fill=species))
 
+## Here's an example. Are the Gentoo penguin body mass observations in our penguins 
+## dataset significantly different than the mean Gentoo penguin body mass accepted
+## in the literature? We can use the body mass value from the Encyclopedia of Life:
 
-## -------------------------------------------------------------------------------------------
-# Separate just the Gentoo from all the penguin data
+https://eol.org/traitbank
+
+## Search for "Gentoo Penguin" in the search bar and you will find that the trait bank
+## lists body mass as 6500g. Let's see what our Gentoo body mass observations look like:
+
+## Here, I'm separating just the Gentoo from all the penguin data.
 gentoo = penguins %>% 
   filter(species=="Gentoo") 
 
-# Quickly visualize the body mass data
+## Now take a look at the body mass data.
 ggplot(data=gentoo) +
   geom_histogram(aes(x=body_mass_g))
 
-# Calculate the mean and standard deviation Gentoo body mass in our data (sometimes base R is more sensible than dplyr)
+## Now calculate the mean and standard deviation of Gentoo body mass in our data (and
+## this time it's going to be easier to use base R than dplyr).
 mean(gentoo$body_mass_g, na.rm=TRUE)
 sd(gentoo$body_mass_g, na.rm=TRUE)
 
+## Now, before we conduct our one-sample t-test, we need to check assumptions. Are there
+## any significant outliers in the data? The function identify_outliers() uses boxplot
+## methods to return a data frame of outliers.
 
-## -------------------------------------------------------------------------------------------
-# Test for the presence of outliers in the Gentoo body mass data
+## Testing for the presence of outliers in the Gentoo body mass data.
 gentoo %>%
   identify_outliers(body_mass_g)
 
-# Note: here is a result from a made-up dataset where I added an outlier
-# data.frame(dat=c(rnorm(100), 312)) %>% identify_outliers()  
+## Note: here is a result from a made-up dataset where I added an outlier
+## data.frame(dat=c(rnorm(100), 312)) %>% identify_outliers()  
 
+## The identify_outliers() test returned nothing, so there were no outliers in the 
+## Gentoo body_mass_g data. 
 
-## -------------------------------------------------------------------------------------------
-# Check normality assumption with a qqplot:
+## The normality assumption can be checked by plotting the data in a Quantile-Quantile
+## plot (QQ plot), and see if it mostly falls along the 1:1 line.
+
 ggplot(gentoo) +
   stat_qq(aes(sample=body_mass_g))
 
+## If the data are not normally distributed, it's recommended to use a non-parametric 
+## test such as the one-sample Wilcoxon signed-rank test. This test is similar to the 
+## one-sample t-test, but focuses on the median rather than the mean. 
 
-## -------------------------------------------------------------------------------------------
-t.test(gentoo$body_mass_g, mu = 5950) # Base R
+## Now let's do our one-sample t-test to see if our body mass data is significantly 
+## different from the body mass value of mu = 6500g published literature:
+
+t.test(gentoo$body_mass_g, mu = 5950) ## Base R function for t-test.
 
 t_test_results = gentoo %>% t_test(body_mass_g ~ 1, mu = 5950) # dplyr-friendly version
 kable(t_test_results)
 
+## The results of our one-sample t-test show the following components:
+#### -- .y.: the outcome variable used in the test.
+#### -- group1,group2: generally, the compared groups in the pairwise tests. Here
+####     we have null model (one-sample test). 
+#### -- statistic: test statistic (t-value) used to compute the p-value.
+#### -- df: degrees of freedom.
+#### -- p: p-value.
 
-## -------------------------------------------------------------------------------------------
+## The output p-value is much less than 0.05 (it's almost p=0). So we reject our null
+## hypothesis that our Gentoo body mass observations are similar to the literature
+## value. 
+
+## To calculate an effect size, called Cohen's d, for the one-sample t-test, you need 
+## to divide the mean difference by the standard deviation of the difference, as 
+## shown below. Note that since mu is a constant: sd(x-mu) = sd(x). 
+
+## Cohen's d formula:
+## ---   d = (mean(x) - mu)/sd(x), where:
+#### x is a numeric vector containing the data
+#### mu is the mean against which the mean of x is compared (default value is mu = 0).
+
 gentoo %>% cohens_d(body_mass_g ~ 1, mu = 6500)
 
+## Recall that, t-test conventional effect sizes are 0.2 (small effect), 0.5 (moderate
+## effect), and 0.8 (large effect). As the effect size, d, is -2.82, you can conclude
+## that there is a large effect, and our sample data is less than the supplied literature
+## value mu (=6500). 
 
-## -------------------------------------------------------------------------------------------
+## Welp. That means that our observed mean Gentoo body mass is 5076 g. Our penguins
+## were probably pretty skinny. Probably, the Encyclopedia of Life body mass trait is 
+## based on adult Gentoo penguins, and we include juveniles in our observations. Or
+## maybe the Encyclopedia value is shit. This would be a good jumping off point to 
+## do some more research.
+
+
+
 # Simplify the dataset to what we need
 data_for_t_test = penguins %>%
   filter(species %in% c("Gentoo", "Adelie"),
