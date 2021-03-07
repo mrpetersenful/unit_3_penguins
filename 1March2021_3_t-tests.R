@@ -146,47 +146,116 @@ gentoo %>% cohens_d(body_mass_g ~ 1, mu = 6500)
 ## maybe the Encyclopedia value is shit. This would be a good jumping off point to 
 ## do some more research.
 
+## Independent sample t-test:
+## The independent samples t-test (or unpaired samples t-test) is used to compare the 
+## mean of two independent groups. For example, you could compare the average weights
+## of individuals grouped by gender: male and female groups, which are two unrelated/
+## independent groups. The independent samples t-test comes in two different forms:
 
+## Assumptions:
+#### -- Independence of the observation. There is no relationship between the observations
+####      in each group.
+#### -- No significant outliers in the groups.
+#### -- The two groups of samples should be normally distributed.
+#### -- If using the Student's t-test, the variances of the two groups should not be
+####      significantly different. This assumption is relaxed in the Welch's t-test.
 
-# Simplify the dataset to what we need
+## Example: Gentoo v. Adelie body mass. Let's use the independent sample t-test to see
+## if there is a significant difference in the mean body mass of Gentoo penguins v. 
+## Adelie penguins.
+
+## Subsetting our data, removing the NA data, and removing the Chinstrap level from
+## the species factor.
 data_for_t_test = penguins %>%
   filter(species %in% c("Gentoo", "Adelie"),
          !is.na(body_mass_g)) %>%
   select(species, body_mass_g) %>%
   droplevels() # This removes the "Chinstrap" level from the species factor
 
-# Calculate summary stats
+## Calculate summary stats
 data_for_t_test %>%
   group_by(species) %>%
   summarize(mean=mean(body_mass_g), sd=sd(body_mass_g))
 
-# Plot a quick histogram:
+## Plot a quick histogram:
 ggplot(aes(x=body_mass_g), data=data_for_t_test) +
   geom_histogram() +
   facet_wrap(~species)
 
-# Look for the presence of outliers
+## Look for the presence of outliers
 data_for_t_test %>%
   group_by(species) %>%
   identify_outliers(body_mass_g)
 
-# Check normality assumption with a qqplot:
+## Check normality assumption with a qqplot:
 ggplot(data_for_t_test) +
   stat_qq(aes(sample=body_mass_g)) +
   facet_wrap(~species)
 
-# Check equality of variances
+## Check equality of variances
 data_for_t_test %>% levene_test(body_mass_g ~ species)
 
+## We examined the distribution of body mass observations for Gentoo and Adelie penguins,
+## and the histograms looked normal. No outliers were found. The QQ plots looked fine.
+## Levene's test checks for equality of variances, and because p>0.05, we accept the 
+## null hypothesis that the variances are equal. That means we can use the Student's
+## t-test if we want (but we'll be "safe" and use Welch's t-test anyway). 
 
-## -------------------------------------------------------------------------------------------
-# Base R version:
+## Now to run the actual t-test. This is base R version.
 t.test(data_for_t_test$body_mass_g ~ data_for_t_test$species)
 
-# dplyr-friendly version:
+## dplyr-friendly version:
 data_for_t_test %>% 
   t_test(body_mass_g ~ species) 
 
-# Calculate the effect size:
+## Calculate the effect size:
 data_for_t_test %>%  cohens_d(body_mass_g ~ species)
+
+## So we can reject the null hypothesis that the means are equal, and accept the 
+## alternative hypothesis. Adelie body mass is significantly lower than Gentoo body
+## mass (Welch's t-test, p<0.001).
+
+## If we had wanted to run a Student's t-test, we could have just included a parameter
+## in the t-test function var.equal=TRUE. An advantage of the dplyr version is that 
+## the output is in a simple table, so transferring these results into a report is 
+## easier, especially if you have a bunch of t-tests to do and you can build a data 
+## frame with a new test result in each row. 
+
+## Paired sample t-test:
+## The paired sample t-test is used to compare the means of two related groups of 
+## samples. Put into other words, it's used in a situation where there are two pairs
+## of values measured for the same samples. For example, you can compare the average
+## weight of 20 sea urchins before and after some experimental treatment. The paired
+## t-test can be used to compare the mean weights before and after treatment. 
+
+## Assumptions:
+#### -- No significant outliers in the differences between groups. 
+#### -- The difference of pairs should follow a normal distribution.
+
+## Conducting the paired t-test looks almost identical to the independent sample t-test,
+## except that you test your assumptions for outliers and normality on the difference 
+## between the paired data (i.e., for each individual urchin, the difference is the 
+## weight before treatment minus the weight after treatment). Then run t_test() with 
+## the parameter paired=TRUE.
+
+## Note on assumptions: 
+### -- Assessing normality: With large enough samples size (n > 30), the violation of
+###    the normality assumption should not cause major problems, according to the central
+###    limit theorem. This implies that we can ignore the distribution of the data and
+###    use parametric tests. However, to be consistent, the Shapiro-Wilk test can be used
+###    to ascertain whether data show or not a serious deviation from normality.
+###
+### -- Assessing equality of variances: Homogeneity of variances can be checked using the
+###    Levene's test. Note that, by default, the t_test() function does not assume
+###    equal variances; instead of the standard Student's t-test, it uses the Welch
+###    t-test by default, which is considered the safer one. To use Student's t-test, 
+###    set var.equal = TRUE. The two methods give very similar results unless both 
+###    the group sizes and the standard deviations are very different.
+### In the situations where the assumptions are violated, non-parametric tests, such 
+### as Wilcoxon test, are recommended. 
+
+## Exercise 3.1: Are Adelie penguin flipper lengths significantly different between 
+## males and females? Do some exploratory data analysis. Compute summary statistics and
+## plot histograms. Then conduct an independent sample t-test. What do your results show?
+
 
