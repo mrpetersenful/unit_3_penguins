@@ -1,3 +1,7 @@
+## 24 February 2021
+## 3.2: ggplot
+
+
 ## ----setup, include=FALSE-------------------------------------------------------------------
 knitr::opts_chunk$set(fig.width=6, fig.asp = 0.618, collapse=TRUE) 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE)

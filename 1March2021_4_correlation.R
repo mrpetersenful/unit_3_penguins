@@ -1,3 +1,7 @@
+
+
+
+
 ## ----setup, include=FALSE-------------------------------------------------------------------
 knitr::opts_chunk$set(fig.width=6, fig.asp = 0.618, collapse=TRUE) 
 
