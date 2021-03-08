@@ -258,4 +258,31 @@ data_for_t_test %>%  cohens_d(body_mass_g ~ species)
 ## males and females? Do some exploratory data analysis. Compute summary statistics and
 ## plot histograms. Then conduct an independent sample t-test. What do your results show?
 
+glimpse(penguins)
+flipper_data_t_test = penguins %>%
+  filter(species == "Adelie",
+         !is.na(flipper_length_mm),
+         !is.na(sex)) %>%
+  dplyr::select(sex, flipper_length_mm) %>%
+  droplevels()
 
+flipper_data_t_test %>%
+  group_by(sex) %>%
+  summarize(mean=mean(flipper_length_mm, sd=sc(flipper_length_mm)))
+
+ggplot(aes(x=flipper_length_mm), data=flipper_data_t_test) +
+  geom_histogram() +
+  facet_wrap(~sex)
+
+flipper_data_t_test %>%
+  group_by(sex) %>%
+  identify_outliers(flipper_length_mm)
+
+ggplot(flipper_data_t_test) +
+  stat_qq(aes(sample=flipper_length_mm)) +
+  facet_wrap(~sex)
+
+flipper_data_t_test %>% levene_test(flipper_length_mm ~ sex)
+
+flipper_data_t_test %>%
+  t_test(flipper_length_mm ~ sex, var.equal = TRUE)
